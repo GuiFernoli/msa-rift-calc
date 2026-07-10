@@ -31,6 +31,7 @@ hours remain until the reset. This calculator does the math and gives a verdict.
 - Auto-projects your resource total when refreshing the clock, so the ETA
   stays consistent
 - Explains its assumptions in plain language on every result
+- Available in Portuguese, English and Spanish (?lang= parameter). ex.: `?lang=en`
 
 ## Tech
 
