@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fenda — Decisão de Upgrade</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #14110d; color: #e8e2d4;
+    min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 20px; }
+  .panel { width: 100%; max-width: 500px; background: #1d1913; border: 1px solid #3a3025;
+    border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+  .header { display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+    background: #2a2113; border-bottom: 1px solid #4a3a1c; }
+  .header svg { width: 26px; height: 26px; stroke: #f0a91e; flex-shrink: 0; }
+  .header .title { font-size: 16px; font-weight: 600; color: #f0a91e; letter-spacing: .5px; }
+  .header .sub { font-size: 12px; color: #b89048; margin-top: 2px; }
+  .body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .section-title { font-size: 11px; color: #8a7e62; text-transform: uppercase; letter-spacing: 1px;
+    margin-top: 4px; padding-bottom: 6px; border-bottom: 1px solid #2a2419; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; color: #b0a890; text-transform: uppercase; letter-spacing: .4px; }
+  .field input { background: #14110d; border: 1px solid #3a3025; border-radius: 8px; color: #e8e2d4;
+    font-family: 'Consolas', monospace; font-size: 16px; padding: 10px 12px; outline: none;
+    transition: border-color .15s; width: 100%; min-height: 44px; min-width: 0; }
+  .field input[type="datetime-local"] { -webkit-appearance: none; appearance: none; }
+  .field input:focus { border-color: #f0a91e; box-shadow: 0 0 0 1px #f0a91e; }
+  .hint { font-size: 11px; color: #6e6552; }
+  .hint code { color: #b89048; background: #14110d; padding: 1px 5px; border-radius: 4px; }
+  .inp { position: relative; display: flex; align-items: center; }
+  .inp input { width: 100%; padding-right: 40px; }
+  .inp .suffix { position: absolute; right: 13px; color: #b89048; font-family: 'Consolas',monospace;
+    font-size: 14px; font-weight: 600; pointer-events: none; }
+  .inp-btn { display: flex; gap: 8px; }
+  .inp-btn input { flex: 1; min-width: 0; }
+  .inp-btn button { background: #2a2113; border: 1px solid #4a3a1c; border-radius: 8px; color: #f0a91e;
+    font-size: 20px; min-width: 48px; min-height: 44px; cursor: pointer; transition: background .15s;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .inp-btn button:hover { background: #3a2e15; }
+  .inp-btn button:active { transform: scale(.94); }
+  .rec { background: #14110d; border-left: 3px solid #f0a91e; border-radius: 0 8px 8px 0;
+    padding: 10px 14px; font-size: 13px; color: #d4c8a8; }
+  .rec strong { color: #f0a91e; }
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+  .opt { background: #14110d; border: 1px solid #2a2419; border-radius: 10px; padding: 14px;
+    display: flex; flex-direction: column; gap: 6px; transition: border-color .2s, box-shadow .2s; }
+  .opt.win { border-color: #f0a91e; box-shadow: 0 0 0 1px #f0a91e; }
+  .opt .tag { font-size: 10px; text-transform: uppercase; letter-spacing: .6px; color: #f0a91e; font-weight: 600; height: 12px; }
+  .opt .name { font-size: 13px; font-weight: 600; color: #d4c8a8; }
+  .opt .desc { font-size: 11px; color: #7a705a; line-height: 1.4; min-height: 30px; }
+  .opt .row { font-size: 11px; color: #8a7e62; font-family: 'Consolas',monospace; }
+  .opt .total { font-size: 22px; font-weight: 700; font-family: 'Consolas',monospace; color: #e8e2d4; margin-top: 4px; }
+  .verdict { background: #f0a91e; border-radius: 10px; padding: 16px; display: flex; align-items: center; gap: 14px; }
+  .verdict svg { width: 28px; height: 28px; stroke: #1d1913; flex-shrink: 0; }
+  .verdict .lbl { font-size: 11px; color: #5a4410; text-transform: uppercase; letter-spacing: .8px; }
+  .verdict .txt { font-size: 16px; font-weight: 700; color: #1d1913; margin-top: 2px; line-height: 1.3; }
+  .verdict .rank { font-size: 12px; color: #5a4410; margin-top: 4px; font-family: 'Consolas',monospace; }
+  .toggle { display: flex; align-items: center; gap: 12px; background: #14110d; border: 1px solid #3a3025;
+    border-radius: 8px; padding: 14px; cursor: pointer; user-select: none; min-height: 48px;
+    -webkit-tap-highlight-color: transparent; }
+  .toggle input { width: 22px; height: 22px; accent-color: #f0a91e; cursor: pointer; flex-shrink: 0; }
+  .toggle label { font-size: 13px; color: #d4c8a8; cursor: pointer; line-height: 1.3; }
+  .collapsible { display: flex; flex-direction: column; gap: 16px; }
+  .hidden { display: none !important; }
+  .premissas { background: #17140f; border: 1px dashed #4a3a1c; border-radius: 8px; padding: 12px 14px; }
+  .premissas .ptit { font-size: 11px; color: #b89048; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 8px; }
+  .premissas ul { margin: 0; padding-left: 18px; }
+  .premissas li { font-size: 12px; color: #a89a7e; line-height: 1.6; }
+  .premissas li strong { color: #d4c8a8; }
+
+  /* ===== MOBILE ===== */
+  @media (max-width: 480px) {
+    body { padding: 10px; }
+    .body { padding: 14px; gap: 14px; }
+    .header { padding: 14px; }
+    .grid2 { grid-template-columns: 1fr; gap: 14px; } /* colunas viram pilha */
+    .options { grid-template-columns: 1fr; }           /* opções empilham */
+    .opt .desc { min-height: 0; }
+    .verdict { padding: 14px; gap: 10px; }
+    .verdict .txt { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+  <noscript>
+    <div style="background:#8a2a2a;color:#ffd4d4;padding:16px;border-radius:8px;margin-bottom:16px;font-size:14px;line-height:1.5;">
+      ⚠️ <strong>Este app não executa JavaScript.</strong> A calculadora precisa dele pra funcionar.<br>
+      Abra este arquivo em um navegador (Chrome, Firefox, Safari) em vez de um leitor de HTML.
+    </div>
+  </noscript>
+  <div class="panel">
+    <div class="header">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L4 8l5 5"/><path d="M15 21l5-5-5-5"/><path d="M4 8h11a5 5 0 0 1 5 5v0"/></svg>
+      <div>
+        <div class="title">Decisão de Upgrade — Fenda</div>
+        <div class="sub">Upar agora vs. esperar o rank-up · reset 12:00</div>
+      </div>
+    </div>
+    <div class="body">
+
+      <div class="section-title">Situação atual</div>
+      <div class="grid2">
+        <div class="field"><label>Recurso atual</label><div class="inp"><input id="atual" type="text" value="37.72" inputmode="decimal"><span class="suffix">M</span></div></div>
+        <div class="field"><label>Meta da patente</label><div class="inp"><input id="meta" type="text" value="39" inputmode="decimal"><span class="suffix">M</span></div></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Farm/h atual</label><div class="inp"><input id="farm" type="text" value="111.8" inputmode="decimal"><span class="suffix">K</span></div></div>
+        <div class="field"><label>Hora atual</label><div class="inp-btn"><input id="agora" type="datetime-local"><button id="btnAgora" type="button" title="Atualizar para agora">⟳</button></div></div>
+      </div>
+      <p class="hint">Digite só o número — a unidade (<code>M</code> ou <code>K</code>) já está fixa. Toque em ⟳ pra atualizar a hora.</p>
+      <p class="hint hidden" id="projInfo" style="color:#7ad4a8;"></p>
+
+      <div class="toggle">
+        <input type="checkbox" id="temUpgrade" checked>
+        <label for="temUpgrade">Tenho minas de nível menor pra fazer upgrade<br><span style="font-size:11px;color:#7a705a;">Desmarque se todas as minas já estão no nível máximo da zona.</span></label>
+      </div>
+
+      <div class="collapsible" id="secUpgrade">
+        <div>
+          <div class="section-title">Parâmetros das minas</div>
+          <div class="grid2" style="margin-top:12px;">
+            <div class="field"><label>Farm/h mina antiga</label><input id="fVelha" type="text" value="1200" inputmode="decimal"></div>
+            <div class="field"><label>Farm/h mina nova</label><input id="fNova" type="text" value="1900" inputmode="decimal"></div>
+          </div>
+          <div class="grid2" style="margin-top:12px;">
+            <div class="field"><label>Limite de upgrades/dia</label><input id="limite" type="text" value="7" inputmode="numeric"></div>
+            <div class="field"><label>Novos slots no rank-up</label><input id="slots" type="text" value="5" inputmode="numeric"></div>
+          </div>
+        </div>
+
+        <div class="rec" id="rec">—</div>
+
+        <div id="secOpcoes">
+          <div class="section-title">Resultado até o reset</div>
+          <div class="options" style="margin-top:12px;">
+            <div class="opt" id="box1">
+              <div class="tag" id="tag1"></div>
+              <div class="name">Opção 1 — upar agora</div>
+              <div class="desc">Faz todos os upgrades agora, ignora o rank-up (slots vazios).</div>
+              <div class="row" id="row1">—</div>
+              <div class="total" id="tot1">—</div>
+            </div>
+            <div class="opt" id="box2">
+              <div class="tag" id="tag2"></div>
+              <div class="name">Opção 2 — esperar rank-up</div>
+              <div class="desc">Upgrades livres agora + minas novas nos slots do rank-up.</div>
+              <div class="row" id="row2">—</div>
+              <div class="total" id="tot2">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="premissas" id="premissas">
+        <div class="ptit">O que a calculadora está considerando</div>
+        <ul id="premList"></ul>
+      </div>
+
+      <div class="verdict">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <div>
+          <div class="lbl">Veredito</div>
+          <div class="txt" id="verdict">—</div>
+          <div class="rank" id="rankinfo">—</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+<script>
+// polyfill pra WebViews antigos (padStart é ES2017)
+if(!String.prototype.padStart){
+  String.prototype.padStart=function(len,pad){
+    var s=String(this); pad=String(pad||' ');
+    while(s.length<len) s=pad+s;
+    return s;
+  };
+}
+// se o JS quebrar em qualquer ponto, mostra o erro em vez de travar mudo
+window.onerror=function(msg){
+  var v=document.getElementById('verdict');
+  if(v) v.textContent='Erro neste app: '+msg+' — abra em um navegador (Chrome/Firefox).';
+  return false;
+};
+(function(){
+  var g=function(id){return document.getElementById(id);};
+  // extrai só o número e aplica a unidade fixa (ignora letras que o user digitar por hábito)
+  function parseUnit(v, mult){
+    if(v===null||v===undefined) return NaN;
+    v=String(v).trim().replace(',','.').replace(/[^0-9.]/g,'');
+    if(v==='') return NaN;
+    var n=parseFloat(v);
+    return isNaN(n)?NaN:n*mult;
+  }
+  function fmt(n){
+    if(Math.abs(n)>=1e6) return (n/1e6).toLocaleString('pt-BR',{maximumFractionDigits:2})+'M';
+    if(Math.abs(n)>=1e3) return (n/1e3).toLocaleString('pt-BR',{maximumFractionDigits:1})+'k';
+    return Math.round(n).toLocaleString('pt-BR');
+  }
+  function nowISO(){ var d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
+  var dias=['dom','seg','ter','qua','qui','sex','sáb'];
+
+  function fmtData(t){
+    var hh=String(t.getHours()).padStart(2,'0'), mm=String(t.getMinutes()).padStart(2,'0');
+    var d=String(t.getDate()).padStart(2,'0'), mo=String(t.getMonth()+1).padStart(2,'0');
+    return dias[t.getDay()]+' '+d+'/'+mo+' · '+hh+':'+mm;
+  }
+  function setVerdict(txt, rank){ g('verdict').textContent=txt; g('rankinfo').textContent=rank||''; }
+  function setPremissas(items){
+    if(!items||!items.length){ g('premissas').classList.add('hidden'); return; }
+    g('premissas').classList.remove('hidden');
+    g('premList').innerHTML=items.map(function(i){return '<li>'+i+'</li>';}).join('');
+  }
+
+  function calc(){
+    var atual=parseUnit(g('atual').value,1e6), meta=parseUnit(g('meta').value,1e6), farm=parseUnit(g('farm').value,1e3);
+    var tAgora=new Date(g('agora').value);
+    var temUpgrade=g('temUpgrade').checked;
+
+    // mostra/esconde a seção de upgrade conforme o checkbox
+    g('secUpgrade').classList.toggle('hidden', !temUpgrade);
+
+    // validações básicas (comuns aos dois modos)
+    if([atual,meta,farm].some(isNaN) || isNaN(tAgora)){ setVerdict('Preencha recurso, meta, farm e hora.',''); setPremissas(null); return; }
+    if(atual>=meta){ setVerdict('Você já bateu a meta da patente. 🎯',''); setPremissas(null); return; }
+    if(farm<=0){ setVerdict('Farm/h precisa ser maior que zero.',''); setPremissas(null); return; }
+
+    // próximo reset 12:00
+    var tReset=new Date(tAgora.getFullYear(),tAgora.getMonth(),tAgora.getDate(),12,0,0);
+    if(tAgora>=tReset) tReset.setDate(tReset.getDate()+1);
+    var Htot=(tReset-tAgora)/3600000;
+
+    // ===== MODO SEM UPGRADE: todas as minas no máximo =====
+    if(!temUpgrade){
+      var hRank=(meta-atual)/farm;
+      var tRank=new Date(tAgora.getTime()+hRank*3600000);
+      var antesReset = hRank<=Htot;
+      setPremissas([
+        'Como suas minas já estão no máximo, o cálculo usa <strong>somente o farm/h atual ('+fmt(farm)+'/h)</strong>, constante até a meta.',
+        'O rank-up mostrado <strong>não considera cristais de recaptura</strong> — cada recaptura que você fizer, atualize o campo <strong>Recurso atual</strong> e o horário vai adiantar.',
+        'Recurso e hora devem ser uma foto do mesmo instante. O botão <strong>⟳</strong> mantém isso: ao atualizar a hora, ele projeta o recurso pelo farm decorrido.'
+      ]);
+      setVerdict(
+        'Todas as minas no máximo — recapture-as pra faturar cristal e acelerar o rank-up.',
+        'Rank-up: '+fmtData(tRank)+(antesReset?'':' (só depois do próximo reset)')
+      );
+      return;
+    }
+
+    // ===== MODO COM UPGRADE =====
+    var fVelha=parseUnit(g('fVelha').value,1), fNova=parseUnit(g('fNova').value,1);
+    var limite=parseInt(g('limite').value)||0, slots=parseInt(g('slots').value)||0;
+    if([fVelha,fNova].some(isNaN)){ setVerdict('Preencha o farm/h das minas.',''); return; }
+
+    var delta=fNova-fVelha; // ganho/h ao subir 1 mina velha->nova
+
+    // OPÇÃO 2 depende do rank-up: calcula quando ele chega (com farm turbinado pelos upgrades livres)
+    var preUp=Math.max(0, limite - slots);
+    var farm2pre=farm + delta*preUp;
+    var horasRank=(meta-atual)/farm2pre;
+    if(horasRank<0) horasRank=0;
+    var tRank2=new Date(tAgora.getTime()+horasRank*3600000);
+    var rankAntesDoReset = horasRank<=Htot;
+
+    // recomendação (sempre útil)
+    g('rec').innerHTML='<strong>Recomendação:</strong> pra Opção 2, suba <strong>'+preUp+'</strong> mina(s) pré rank-up ('+limite+' limite − '+slots+' slots novos) e pegue as <strong>'+slots+'</strong> novas quando o rank-up abrir.';
+
+    // Se o rank-up NÃO acontece antes do reset → Opção 2 é impossível neste ciclo
+    if(!rankAntesDoReset){
+      g('secOpcoes').classList.add('hidden');
+      setPremissas([
+        'O rank-up mostrado <strong>assume que você já subiu '+preUp+' mina(s) agora</strong> — o farm usado no cálculo é '+fmt(farm2pre)+'/h, não '+fmt(farm)+'/h. Se não fizer os upgrades, o rank-up atrasa.',
+        'Como o rank-up cai <strong>depois do reset ('+Htot.toFixed(1)+'h de agora)</strong>, os slots novos não abrem neste ciclo — por isso a comparação de opções foi ocultada.',
+        'A recomendação é upar o limite diário completo ('+limite+' minas) e seguir farmando: é o máximo de ganho possível hoje.'
+      ]);
+      setVerdict(
+        'Não dá pra passar de patente antes do reset → faça a Opção 1: suba as minas agora e farme.',
+        'Rank-up: '+fmtData(tRank2)+(preUp>0?' (já contando as '+preUp+' minas subidas)':'')+' — só depois do reset, slots não abrem hoje'
+      );
+      return;
+    }
+
+    // rank-up acontece a tempo → COMPARA as duas opções
+    g('secOpcoes').classList.remove('hidden');
+
+    var farm1=farm + delta*limite;
+    var opt1=farm1*Htot;
+
+    var farm2pos=farm2pre + fNova*slots;
+    var HrankReset=Math.max(0, Htot - horasRank);
+    var HpreRank=Htot - HrankReset;
+    var opt2=farm2pre*HpreRank + farm2pos*HrankReset;
+
+    g('row1').textContent='farm pós: '+fmt(farm1)+'/h · '+Htot.toFixed(1)+'h';
+    g('tot1').textContent=fmt(opt1);
+    g('row2').textContent='pré: '+fmt(farm2pre)+'/h → pós: '+fmt(farm2pos)+'/h';
+    g('tot2').textContent=fmt(opt2);
+
+    var diff=opt2-opt1, pct=Math.abs(diff)/Math.max(opt1,opt2)*100;
+    setPremissas([
+      '<strong>Opção 1:</strong> assume que você sobe as '+limite+' minas <strong>agora</strong> — farm vai a '+fmt(farm1)+'/h pelo ciclo inteiro ('+Htot.toFixed(1)+'h), sem usar os slots do rank-up.',
+      '<strong>Opção 2:</strong> assume '+preUp+' mina(s) subida(s) <strong>agora</strong> (farm '+fmt(farm2pre)+'/h) e, no rank-up, +'+slots+' minas novas (farm sobe pra '+fmt(farm2pos)+'/h até o reset).',
+      'O horário do rank-up já <strong>desconta a aceleração</strong> das minas subidas agora. Se você não fizer os upgrades, tudo atrasa.',
+      'Os totais comparam o <strong>farm acumulado até o reset (12:00)</strong> — cristais de fera ou recaptura não entram; atualize o Recurso atual quando recebê-los.'
+    ]);
+    var box1=g('box1'), box2=g('box2');
+    box1.classList.remove('win'); box2.classList.remove('win');
+    g('tag1').textContent=''; g('tag2').textContent='';
+    var rankStr='Rank-up: '+fmtData(tRank2)+(preUp>0?' (já contando as '+preUp+' minas subidas)':'');
+    if(Math.abs(diff)<1){ setVerdict('Empate técnico — tanto faz.', rankStr); }
+    else if(diff>0){ box2.classList.add('win'); g('tag2').textContent='melhor';
+      setVerdict('Opção 2 vence por '+fmt(diff)+' ('+pct.toFixed(1)+'%)'+(pct<1?' — quase empate.':'.'), rankStr); }
+    else { box1.classList.add('win'); g('tag1').textContent='melhor';
+      setVerdict('Opção 1 vence por '+fmt(-diff)+' ('+pct.toFixed(1)+'%)'+(pct<1?' — quase empate.':'.'), rankStr); }
+  }
+
+  g('agora').value=nowISO();
+  g('btnAgora').addEventListener('click',function(){
+    // auto-projeção: recurso e hora são uma "foto" do mesmo instante.
+    // Ao atualizar a hora, projeta o recurso pelo farm/h no tempo decorrido.
+    var tAntes=new Date(g('agora').value);
+    var tNovo=new Date();
+    var farm=parseUnit(g('farm').value,1e3);
+    var atual=parseUnit(g('atual').value,1e6);
+    var horas=(tNovo-tAntes)/3600000;
+    if(!isNaN(farm)&&!isNaN(atual)&&horas>0&&horas<48){ // projeta só janelas razoáveis
+      var ganho=farm*horas;
+      var novo=(atual+ganho)/1e6;
+      g('atual').value=novo.toFixed(2);
+      g('projInfo').textContent='recurso projetado: +'+fmt(ganho)+' ('+(horas*60).toFixed(0)+'min de farm)';
+      g('projInfo').classList.remove('hidden');
+      clearTimeout(g('projInfo')._t);
+      g('projInfo')._t=setTimeout(function(){ g('projInfo').classList.add('hidden'); },6000);
+    }
+    g('agora').value=nowISO();
+    calc();
+  });
+  g('temUpgrade').addEventListener('change',calc);
+  ['atual','meta','farm','fVelha','fNova','limite','slots','agora'].forEach(function(id){
+    g(id).addEventListener('input',calc);
+    g(id).addEventListener('change',calc); // mobile: datetime-local dispara 'change', não 'input'
+  });
+  calc();
+})();
+</script>
+</body>
+</html>
