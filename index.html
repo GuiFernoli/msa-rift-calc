@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fenda — Decisão de Upgrade</title>
+<title>MSA Rift Calc</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', system-ui, sans-serif; background: #14110d; color: #e8e2d4;
@@ -15,6 +15,11 @@
   .header svg { width: 26px; height: 26px; stroke: #f0a91e; flex-shrink: 0; }
   .header .title { font-size: 16px; font-weight: 600; color: #f0a91e; letter-spacing: .5px; }
   .header .sub { font-size: 12px; color: #b89048; margin-top: 2px; }
+  .lang { margin-left: auto; display: flex; gap: 4px; flex-shrink: 0; }
+  .lang button { background: transparent; border: 1px solid #4a3a1c; border-radius: 6px; color: #b89048;
+    font-size: 11px; font-weight: 600; padding: 6px 8px; cursor: pointer; min-height: 32px;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .lang button.active { background: #f0a91e; color: #1d1913; border-color: #f0a91e; }
   .body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
   .section-title { font-size: 11px; color: #8a7e62; text-transform: uppercase; letter-spacing: 1px;
     margin-top: 4px; padding-bottom: 6px; border-bottom: 1px solid #2a2419; }
@@ -62,6 +67,7 @@
     -webkit-tap-highlight-color: transparent; }
   .toggle input { width: 22px; height: 22px; accent-color: #f0a91e; cursor: pointer; flex-shrink: 0; }
   .toggle label { font-size: 13px; color: #d4c8a8; cursor: pointer; line-height: 1.3; }
+  .toggle label .tsub { font-size: 11px; color: #7a705a; }
   .collapsible { display: flex; flex-direction: column; gap: 16px; }
   .hidden { display: none !important; }
   .premissas { background: #17140f; border: 1px dashed #4a3a1c; border-radius: 8px; padding: 12px 14px; }
@@ -74,9 +80,9 @@
   @media (max-width: 480px) {
     body { padding: 10px; }
     .body { padding: 14px; gap: 14px; }
-    .header { padding: 14px; }
-    .grid2 { grid-template-columns: 1fr; gap: 14px; } /* colunas viram pilha */
-    .options { grid-template-columns: 1fr; }           /* opções empilham */
+    .header { padding: 14px; flex-wrap: wrap; }
+    .grid2 { grid-template-columns: 1fr; gap: 14px; }
+    .options { grid-template-columns: 1fr; }
     .opt .desc { min-height: 0; }
     .verdict { padding: 14px; gap: 10px; }
     .verdict .txt { font-size: 15px; }
@@ -86,66 +92,71 @@
 <body>
   <noscript>
     <div style="background:#8a2a2a;color:#ffd4d4;padding:16px;border-radius:8px;margin-bottom:16px;font-size:14px;line-height:1.5;">
-      ⚠️ <strong>Este app não executa JavaScript.</strong> A calculadora precisa dele pra funcionar.<br>
-      Abra este arquivo em um navegador (Chrome, Firefox, Safari) em vez de um leitor de HTML.
+      ⚠️ <strong>Este app não executa JavaScript / This app doesn't run JavaScript.</strong><br>
+      Abra em um navegador (Chrome, Firefox, Safari) / Open in a web browser.
     </div>
   </noscript>
   <div class="panel">
     <div class="header">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L4 8l5 5"/><path d="M15 21l5-5-5-5"/><path d="M4 8h11a5 5 0 0 1 5 5v0"/></svg>
       <div>
-        <div class="title">Decisão de Upgrade — Fenda</div>
-        <div class="sub">Upar agora vs. esperar o rank-up · reset 12:00</div>
+        <div class="title" data-i18n="title"></div>
+        <div class="sub" data-i18n="sub"></div>
+      </div>
+      <div class="lang">
+        <button id="langPt" type="button">PT</button>
+        <button id="langEn" type="button">EN</button>
+        <button id="langEs" type="button">ES</button>
       </div>
     </div>
     <div class="body">
 
-      <div class="section-title">Situação atual</div>
+      <div class="section-title" data-i18n="secSituacao"></div>
       <div class="grid2">
-        <div class="field"><label>Recurso atual</label><div class="inp"><input id="atual" type="text" value="37.72" inputmode="decimal"><span class="suffix">M</span></div></div>
-        <div class="field"><label>Meta da patente</label><div class="inp"><input id="meta" type="text" value="39" inputmode="decimal"><span class="suffix">M</span></div></div>
+        <div class="field"><label data-i18n="lblRecurso"></label><div class="inp"><input id="atual" type="text" value="37.72" inputmode="decimal"><span class="suffix">M</span></div></div>
+        <div class="field"><label data-i18n="lblMeta"></label><div class="inp"><input id="meta" type="text" value="39" inputmode="decimal"><span class="suffix">M</span></div></div>
       </div>
       <div class="grid2">
-        <div class="field"><label>Farm/h atual</label><div class="inp"><input id="farm" type="text" value="111.8" inputmode="decimal"><span class="suffix">K</span></div></div>
-        <div class="field"><label>Hora atual</label><div class="inp-btn"><input id="agora" type="datetime-local"><button id="btnAgora" type="button" title="Atualizar para agora">⟳</button></div></div>
+        <div class="field"><label data-i18n="lblFarm"></label><div class="inp"><input id="farm" type="text" value="111.8" inputmode="decimal"><span class="suffix">K</span></div></div>
+        <div class="field"><label data-i18n="lblHora"></label><div class="inp-btn"><input id="agora" type="datetime-local"><button id="btnAgora" type="button">⟳</button></div></div>
       </div>
-      <p class="hint">Digite só o número — a unidade (<code>M</code> ou <code>K</code>) já está fixa. Toque em ⟳ pra atualizar a hora.</p>
+      <p class="hint" data-i18n="hint"></p>
       <p class="hint hidden" id="projInfo" style="color:#7ad4a8;"></p>
 
       <div class="toggle">
         <input type="checkbox" id="temUpgrade" checked>
-        <label for="temUpgrade">Tenho minas de nível menor pra fazer upgrade<br><span style="font-size:11px;color:#7a705a;">Desmarque se todas as minas já estão no nível máximo da zona.</span></label>
+        <label for="temUpgrade"><span data-i18n="toggleMain"></span><br><span class="tsub" data-i18n="toggleSub"></span></label>
       </div>
 
       <div class="collapsible" id="secUpgrade">
         <div>
-          <div class="section-title">Parâmetros das minas</div>
+          <div class="section-title" data-i18n="secMinas"></div>
           <div class="grid2" style="margin-top:12px;">
-            <div class="field"><label>Farm/h mina antiga</label><input id="fVelha" type="text" value="1200" inputmode="decimal"></div>
-            <div class="field"><label>Farm/h mina nova</label><input id="fNova" type="text" value="1900" inputmode="decimal"></div>
+            <div class="field"><label data-i18n="lblVelha"></label><input id="fVelha" type="text" value="1200" inputmode="decimal"></div>
+            <div class="field"><label data-i18n="lblNova"></label><input id="fNova" type="text" value="1900" inputmode="decimal"></div>
           </div>
           <div class="grid2" style="margin-top:12px;">
-            <div class="field"><label>Limite de upgrades/dia</label><input id="limite" type="text" value="7" inputmode="numeric"></div>
-            <div class="field"><label>Novos slots no rank-up</label><input id="slots" type="text" value="5" inputmode="numeric"></div>
+            <div class="field"><label data-i18n="lblLimite"></label><input id="limite" type="text" value="7" inputmode="numeric"></div>
+            <div class="field"><label data-i18n="lblSlots"></label><input id="slots" type="text" value="5" inputmode="numeric"></div>
           </div>
         </div>
 
         <div class="rec" id="rec">—</div>
 
         <div id="secOpcoes">
-          <div class="section-title">Resultado até o reset</div>
+          <div class="section-title" data-i18n="secResultado"></div>
           <div class="options" style="margin-top:12px;">
             <div class="opt" id="box1">
               <div class="tag" id="tag1"></div>
-              <div class="name">Opção 1 — upar agora</div>
-              <div class="desc">Faz todos os upgrades agora, ignora o rank-up (slots vazios).</div>
+              <div class="name" data-i18n="opt1Name"></div>
+              <div class="desc" data-i18n="opt1Desc"></div>
               <div class="row" id="row1">—</div>
               <div class="total" id="tot1">—</div>
             </div>
             <div class="opt" id="box2">
               <div class="tag" id="tag2"></div>
-              <div class="name">Opção 2 — esperar rank-up</div>
-              <div class="desc">Upgrades livres agora + minas novas nos slots do rank-up.</div>
+              <div class="name" data-i18n="opt2Name"></div>
+              <div class="desc" data-i18n="opt2Desc"></div>
               <div class="row" id="row2">—</div>
               <div class="total" id="tot2">—</div>
             </div>
@@ -154,14 +165,14 @@
       </div>
 
       <div class="premissas" id="premissas">
-        <div class="ptit">O que a calculadora está considerando</div>
+        <div class="ptit" data-i18n="premTitle"></div>
         <ul id="premList"></ul>
       </div>
 
       <div class="verdict">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         <div>
-          <div class="lbl">Veredito</div>
+          <div class="lbl" data-i18n="verdictLbl"></div>
           <div class="txt" id="verdict">—</div>
           <div class="rank" id="rankinfo">—</div>
         </div>
@@ -178,15 +189,156 @@ if(!String.prototype.padStart){
     return s;
   };
 }
-// se o JS quebrar em qualquer ponto, mostra o erro em vez de travar mudo
 window.onerror=function(msg){
   var v=document.getElementById('verdict');
-  if(v) v.textContent='Erro neste app: '+msg+' — abra em um navegador (Chrome/Firefox).';
+  if(v) v.textContent='JS error: '+msg+' — open in a browser (Chrome/Firefox).';
   return false;
 };
 (function(){
   var g=function(id){return document.getElementById(id);};
-  // extrai só o número e aplica a unidade fixa (ignora letras que o user digitar por hábito)
+
+  // ===================== I18N =====================
+  var I18N={
+    pt:{
+      _locale:'pt-BR', _days:['dom','seg','ter','qua','qui','sex','sáb'],
+      title:'Decisão de Upgrade — Fenda', sub:'Upar agora vs. esperar o rank-up · reset 12:00',
+      secSituacao:'Situação atual', lblRecurso:'Recurso atual', lblMeta:'Meta da patente',
+      lblFarm:'Farm/h atual', lblHora:'Hora atual',
+      hint:'Digite só o número — a unidade (<code>M</code> ou <code>K</code>) já está fixa. Toque em ⟳ pra atualizar a hora.',
+      toggleMain:'Tenho minas de nível menor pra fazer upgrade',
+      toggleSub:'Desmarque se todas as minas já estão no nível máximo da zona.',
+      secMinas:'Parâmetros das minas', lblVelha:'Farm/h mina antiga', lblNova:'Farm/h mina nova',
+      lblLimite:'Limite de upgrades/dia', lblSlots:'Novos slots no rank-up',
+      secResultado:'Resultado até o reset',
+      opt1Name:'Opção 1 — upar agora', opt1Desc:'Faz todos os upgrades agora, ignora o rank-up (slots vazios).',
+      opt2Name:'Opção 2 — esperar rank-up', opt2Desc:'Upgrades livres agora + minas novas nos slots do rank-up.',
+      premTitle:'O que a calculadora está considerando', verdictLbl:'Veredito', tagBest:'melhor',
+      errFill:'Preencha recurso, meta, farm e hora.', errMet:'Você já bateu a meta da patente. 🎯',
+      errFarmZero:'Farm/h precisa ser maior que zero.', errFillMines:'Preencha o farm/h das minas.',
+      noUpVerdict:'Todas as minas no máximo — recapture-as pra faturar cristal e acelerar o rank-up.',
+      rankPrefix:'Rank-up: ', afterNextReset:' (só depois do próximo reset)',
+      noUpPrem1:'Como suas minas já estão no máximo, o cálculo usa <strong>somente o farm/h atual ({farm}/h)</strong>, constante até a meta.',
+      noUpPrem2:'O rank-up mostrado <strong>não considera cristais de recaptura</strong> — cada recaptura que você fizer, atualize o campo <strong>Recurso atual</strong> e o horário vai adiantar.',
+      noUpPrem3:'Recurso e hora devem ser uma foto do mesmo instante. O botão <strong>⟳</strong> mantém isso: ao atualizar a hora, ele projeta o recurso pelo farm decorrido.',
+      rec:'<strong>Recomendação:</strong> pra Opção 2, suba <strong>{preUp}</strong> mina(s) pré rank-up ({limite} limite − {slots} slots novos) e pegue as <strong>{slots}</strong> novas quando o rank-up abrir.',
+      noRankVerdict:'Não dá pra passar de patente antes do reset → faça a Opção 1: suba as minas agora e farme.',
+      countingMines:' (já contando as {preUp} minas subidas)',
+      afterResetSuffix:' — só depois do reset, slots não abrem hoje',
+      noRankPrem1:'O rank-up mostrado <strong>assume que você já subiu {preUp} mina(s) agora</strong> — o farm usado no cálculo é {farm2pre}/h, não {farm}/h. Se não fizer os upgrades, o rank-up atrasa.',
+      noRankPrem2:'Como o rank-up cai <strong>depois do reset ({htot}h de agora)</strong>, os slots novos não abrem neste ciclo — por isso a comparação de opções foi ocultada.',
+      noRankPrem3:'A recomendação é upar o limite diário completo ({limite} minas) e seguir farmando: é o máximo de ganho possível hoje.',
+      row1:'farm pós: {farm1}/h · {htot}h', row2:'pré: {pre}/h → pós: {pos}/h',
+      cmpPrem1:'<strong>Opção 1:</strong> assume que você sobe as {limite} minas <strong>agora</strong> — farm vai a {farm1}/h pelo ciclo inteiro ({htot}h), sem usar os slots do rank-up.',
+      cmpPrem2:'<strong>Opção 2:</strong> assume {preUp} mina(s) subida(s) <strong>agora</strong> (farm {farm2pre}/h) e, no rank-up, +{slots} minas novas (farm sobe pra {farm2pos}/h até o reset).',
+      cmpPrem3:'O horário do rank-up já <strong>desconta a aceleração</strong> das minas subidas agora. Se você não fizer os upgrades, tudo atrasa.',
+      cmpPrem4:'Os totais comparam o <strong>farm acumulado até o reset (12:00)</strong> — cristais de fera ou recaptura não entram; atualize o Recurso atual quando recebê-los.',
+      tie:'Empate técnico — tanto faz.',
+      winOpt1:'Opção 1 vence por {diff} ({pct}%)', winOpt2:'Opção 2 vence por {diff} ({pct}%)',
+      almostTie:' — quase empate.',
+      proj:'recurso projetado: +{gain} ({min}min de farm)'
+    },
+    en:{
+      _locale:'en-US', _days:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+      title:'Rift Upgrade Decision', sub:'Upgrade now vs. wait for rank-up · reset 12:00',
+      secSituacao:'Current situation', lblRecurso:'Current resources', lblMeta:'Rank goal',
+      lblFarm:'Current farm/h', lblHora:'Current time',
+      hint:'Type the number only — the unit (<code>M</code> or <code>K</code>) is fixed. Tap ⟳ to update the time.',
+      toggleMain:'I have lower-level mines to upgrade',
+      toggleSub:"Uncheck if every mine is already at the zone's max level.",
+      secMinas:'Mine parameters', lblVelha:'Old mine farm/h', lblNova:'New mine farm/h',
+      lblLimite:'Upgrade limit per day', lblSlots:'New slots at rank-up',
+      secResultado:'Result until reset',
+      opt1Name:'Option 1 — upgrade now', opt1Desc:'Do all upgrades now, ignore the rank-up (slots stay empty).',
+      opt2Name:'Option 2 — wait for rank-up', opt2Desc:'Free upgrades now + new mines in the rank-up slots.',
+      premTitle:'What the calculator is assuming', verdictLbl:'Verdict', tagBest:'best',
+      errFill:'Fill in resources, goal, farm and time.', errMet:"You've already hit the rank goal. 🎯",
+      errFarmZero:'Farm/h must be greater than zero.', errFillMines:"Fill in the mines' farm/h.",
+      noUpVerdict:'All mines maxed — recapture them to bank crystals and speed up the rank-up.',
+      rankPrefix:'Rank-up: ', afterNextReset:' (only after the next reset)',
+      noUpPrem1:'Since your mines are maxed, the math uses <strong>only your current farm/h ({farm}/h)</strong>, constant until the goal.',
+      noUpPrem2:"The rank-up shown <strong>doesn't include recapture crystals</strong> — after each recapture, update <strong>Current resources</strong> and the ETA will move up.",
+      noUpPrem3:'Resources and time must be a snapshot of the same moment. The <strong>⟳</strong> button keeps that: when updating the time, it projects your resources by the elapsed farm.',
+      rec:'<strong>Recommendation:</strong> for Option 2, upgrade <strong>{preUp}</strong> mine(s) before the rank-up ({limite} limit − {slots} new slots) and grab the <strong>{slots}</strong> new ones when the rank-up unlocks.',
+      noRankVerdict:"You can't rank up before the reset → go with Option 1: upgrade your mines now and keep farming.",
+      countingMines:' (already counting the {preUp} upgraded mines)',
+      afterResetSuffix:" — only after the reset, slots won't open today",
+      noRankPrem1:'The rank-up shown <strong>assumes you upgraded {preUp} mine(s) right now</strong> — the farm used is {farm2pre}/h, not {farm}/h. Skip the upgrades and the rank-up slips.',
+      noRankPrem2:'Since the rank-up lands <strong>after the reset ({htot}h from now)</strong>, the new slots won\'t open this cycle — that\'s why the comparison is hidden.',
+      noRankPrem3:'The recommendation is to use the full daily limit ({limite} mines) and keep farming: that\'s the max gain available today.',
+      row1:'farm after: {farm1}/h · {htot}h', row2:'pre: {pre}/h → post: {pos}/h',
+      cmpPrem1:'<strong>Option 1:</strong> assumes you upgrade all {limite} mines <strong>now</strong> — farm goes to {farm1}/h for the whole cycle ({htot}h), without using the rank-up slots.',
+      cmpPrem2:'<strong>Option 2:</strong> assumes {preUp} mine(s) upgraded <strong>now</strong> (farm {farm2pre}/h) and, at rank-up, +{slots} new mines (farm rises to {farm2pos}/h until the reset).',
+      cmpPrem3:'The rank-up time already <strong>accounts for the acceleration</strong> from the mines upgraded now. Skip the upgrades and everything slips.',
+      cmpPrem4:'The totals compare <strong>farm accumulated until the reset (12:00)</strong> — beast or recapture crystals are not included; update Current resources when you receive them.',
+      tie:"Technical tie — either works.",
+      winOpt1:'Option 1 wins by {diff} ({pct}%)', winOpt2:'Option 2 wins by {diff} ({pct}%)',
+      almostTie:' — almost a tie.',
+      proj:'resources projected: +{gain} ({min}min of farm)'
+    },
+    es:{
+      _locale:'es-ES', _days:['dom','lun','mar','mié','jue','vie','sáb'],
+      title:'Decisión de Mejora — Grieta', sub:'Mejorar ahora vs. esperar el rank-up · reset 12:00',
+      secSituacao:'Situación actual', lblRecurso:'Recurso actual', lblMeta:'Meta de rango',
+      lblFarm:'Farm/h actual', lblHora:'Hora actual',
+      hint:'Escribe solo el número — la unidad (<code>M</code> o <code>K</code>) ya está fija. Toca ⟳ para actualizar la hora.',
+      toggleMain:'Tengo minas de nivel menor para mejorar',
+      toggleSub:'Desmarca si todas las minas ya están al nivel máximo de la zona.',
+      secMinas:'Parámetros de las minas', lblVelha:'Farm/h mina antigua', lblNova:'Farm/h mina nueva',
+      lblLimite:'Límite de mejoras/día', lblSlots:'Nuevos slots en el rank-up',
+      secResultado:'Resultado hasta el reset',
+      opt1Name:'Opción 1 — mejorar ahora', opt1Desc:'Haz todas las mejoras ahora, ignora el rank-up (slots vacíos).',
+      opt2Name:'Opción 2 — esperar el rank-up', opt2Desc:'Mejoras libres ahora + minas nuevas en los slots del rank-up.',
+      premTitle:'Qué está considerando la calculadora', verdictLbl:'Veredicto', tagBest:'mejor',
+      errFill:'Completa recurso, meta, farm y hora.', errMet:'Ya alcanzaste la meta de rango. 🎯',
+      errFarmZero:'El farm/h debe ser mayor que cero.', errFillMines:'Completa el farm/h de las minas.',
+      noUpVerdict:'Todas las minas al máximo — recaptúralas para ganar cristales y acelerar el rank-up.',
+      rankPrefix:'Rank-up: ', afterNextReset:' (solo después del próximo reset)',
+      noUpPrem1:'Como tus minas ya están al máximo, el cálculo usa <strong>solo el farm/h actual ({farm}/h)</strong>, constante hasta la meta.',
+      noUpPrem2:'El rank-up mostrado <strong>no considera cristales de recaptura</strong> — tras cada recaptura, actualiza <strong>Recurso actual</strong> y el horario se adelantará.',
+      noUpPrem3:'Recurso y hora deben ser una foto del mismo instante. El botón <strong>⟳</strong> lo mantiene: al actualizar la hora, proyecta el recurso según el farm transcurrido.',
+      rec:'<strong>Recomendación:</strong> para la Opción 2, mejora <strong>{preUp}</strong> mina(s) antes del rank-up ({limite} límite − {slots} slots nuevos) y toma las <strong>{slots}</strong> nuevas cuando el rank-up se desbloquee.',
+      noRankVerdict:'No puedes subir de rango antes del reset → haz la Opción 1: mejora las minas ahora y sigue farmeando.',
+      countingMines:' (ya contando las {preUp} minas mejoradas)',
+      afterResetSuffix:' — solo después del reset, los slots no abren hoy',
+      noRankPrem1:'El rank-up mostrado <strong>asume que ya mejoraste {preUp} mina(s) ahora</strong> — el farm usado es {farm2pre}/h, no {farm}/h. Si no haces las mejoras, el rank-up se retrasa.',
+      noRankPrem2:'Como el rank-up cae <strong>después del reset ({htot}h desde ahora)</strong>, los slots nuevos no abren en este ciclo — por eso la comparación está oculta.',
+      noRankPrem3:'La recomendación es usar el límite diario completo ({limite} minas) y seguir farmeando: es la ganancia máxima posible hoy.',
+      row1:'farm después: {farm1}/h · {htot}h', row2:'pre: {pre}/h → post: {pos}/h',
+      cmpPrem1:'<strong>Opción 1:</strong> asume que mejoras las {limite} minas <strong>ahora</strong> — el farm sube a {farm1}/h durante todo el ciclo ({htot}h), sin usar los slots del rank-up.',
+      cmpPrem2:'<strong>Opción 2:</strong> asume {preUp} mina(s) mejorada(s) <strong>ahora</strong> (farm {farm2pre}/h) y, en el rank-up, +{slots} minas nuevas (el farm sube a {farm2pos}/h hasta el reset).',
+      cmpPrem3:'El horario del rank-up ya <strong>descuenta la aceleración</strong> de las minas mejoradas ahora. Si no haces las mejoras, todo se retrasa.',
+      cmpPrem4:'Los totales comparan el <strong>farm acumulado hasta el reset (12:00)</strong> — cristales de bestia o recaptura no entran; actualiza Recurso actual cuando los recibas.',
+      tie:'Empate técnico — da igual.',
+      winOpt1:'La Opción 1 gana por {diff} ({pct}%)', winOpt2:'La Opción 2 gana por {diff} ({pct}%)',
+      almostTie:' — casi empate.',
+      proj:'recurso proyectado: +{gain} ({min}min de farm)'
+    }
+  };
+
+  var LANG='pt';
+  function t(key, params){
+    var s=(I18N[LANG]&&I18N[LANG][key])||I18N.pt[key]||key;
+    if(params) for(var k in params) s=s.split('{'+k+'}').join(params[k]);
+    return s;
+  }
+  function applyStatic(){
+    var els=document.querySelectorAll('[data-i18n]');
+    for(var i=0;i<els.length;i++) els[i].innerHTML=t(els[i].getAttribute('data-i18n'));
+    document.documentElement.lang=I18N[LANG]._locale;
+    document.title='MSA Rift Calc';
+    g('langPt').classList.toggle('active',LANG==='pt');
+    g('langEn').classList.toggle('active',LANG==='en');
+    g('langEs').classList.toggle('active',LANG==='es');
+  }
+  function setLang(l){
+    if(!I18N[l]) l='pt';
+    LANG=l;
+    try{ history.replaceState(null,'', location.pathname+'?lang='+l); }catch(e){}
+    applyStatic();
+    calc();
+  }
+
+  // ===================== HELPERS =====================
   function parseUnit(v, mult){
     if(v===null||v===undefined) return NaN;
     v=String(v).trim().replace(',','.').replace(/[^0-9.]/g,'');
@@ -195,17 +347,16 @@ window.onerror=function(msg){
     return isNaN(n)?NaN:n*mult;
   }
   function fmt(n){
-    if(Math.abs(n)>=1e6) return (n/1e6).toLocaleString('pt-BR',{maximumFractionDigits:2})+'M';
-    if(Math.abs(n)>=1e3) return (n/1e3).toLocaleString('pt-BR',{maximumFractionDigits:1})+'k';
-    return Math.round(n).toLocaleString('pt-BR');
+    var loc=I18N[LANG]._locale;
+    if(Math.abs(n)>=1e6) return (n/1e6).toLocaleString(loc,{maximumFractionDigits:2})+'M';
+    if(Math.abs(n)>=1e3) return (n/1e3).toLocaleString(loc,{maximumFractionDigits:1})+'k';
+    return Math.round(n).toLocaleString(loc);
   }
   function nowISO(){ var d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
-  var dias=['dom','seg','ter','qua','qui','sex','sáb'];
-
-  function fmtData(t){
-    var hh=String(t.getHours()).padStart(2,'0'), mm=String(t.getMinutes()).padStart(2,'0');
-    var d=String(t.getDate()).padStart(2,'0'), mo=String(t.getMonth()+1).padStart(2,'0');
-    return dias[t.getDay()]+' '+d+'/'+mo+' · '+hh+':'+mm;
+  function fmtData(tm){
+    var hh=String(tm.getHours()).padStart(2,'0'), mm=String(tm.getMinutes()).padStart(2,'0');
+    var d=String(tm.getDate()).padStart(2,'0'), mo=String(tm.getMonth()+1).padStart(2,'0');
+    return I18N[LANG]._days[tm.getDay()]+' '+d+'/'+mo+' · '+hh+':'+mm;
   }
   function setVerdict(txt, rank){ g('verdict').textContent=txt; g('rankinfo').textContent=rank||''; }
   function setPremissas(items){
@@ -214,49 +365,43 @@ window.onerror=function(msg){
     g('premList').innerHTML=items.map(function(i){return '<li>'+i+'</li>';}).join('');
   }
 
+  // ===================== CORE =====================
   function calc(){
     var atual=parseUnit(g('atual').value,1e6), meta=parseUnit(g('meta').value,1e6), farm=parseUnit(g('farm').value,1e3);
     var tAgora=new Date(g('agora').value);
     var temUpgrade=g('temUpgrade').checked;
 
-    // mostra/esconde a seção de upgrade conforme o checkbox
     g('secUpgrade').classList.toggle('hidden', !temUpgrade);
 
-    // validações básicas (comuns aos dois modos)
-    if([atual,meta,farm].some(isNaN) || isNaN(tAgora)){ setVerdict('Preencha recurso, meta, farm e hora.',''); setPremissas(null); return; }
-    if(atual>=meta){ setVerdict('Você já bateu a meta da patente. 🎯',''); setPremissas(null); return; }
-    if(farm<=0){ setVerdict('Farm/h precisa ser maior que zero.',''); setPremissas(null); return; }
+    if([atual,meta,farm].some(isNaN) || isNaN(tAgora)){ setVerdict(t('errFill'),''); setPremissas(null); return; }
+    if(atual>=meta){ setVerdict(t('errMet'),''); setPremissas(null); return; }
+    if(farm<=0){ setVerdict(t('errFarmZero'),''); setPremissas(null); return; }
 
     // próximo reset 12:00
     var tReset=new Date(tAgora.getFullYear(),tAgora.getMonth(),tAgora.getDate(),12,0,0);
     if(tAgora>=tReset) tReset.setDate(tReset.getDate()+1);
     var Htot=(tReset-tAgora)/3600000;
 
-    // ===== MODO SEM UPGRADE: todas as minas no máximo =====
+    // ===== MODO SEM UPGRADE =====
     if(!temUpgrade){
       var hRank=(meta-atual)/farm;
       var tRank=new Date(tAgora.getTime()+hRank*3600000);
       var antesReset = hRank<=Htot;
       setPremissas([
-        'Como suas minas já estão no máximo, o cálculo usa <strong>somente o farm/h atual ('+fmt(farm)+'/h)</strong>, constante até a meta.',
-        'O rank-up mostrado <strong>não considera cristais de recaptura</strong> — cada recaptura que você fizer, atualize o campo <strong>Recurso atual</strong> e o horário vai adiantar.',
-        'Recurso e hora devem ser uma foto do mesmo instante. O botão <strong>⟳</strong> mantém isso: ao atualizar a hora, ele projeta o recurso pelo farm decorrido.'
+        t('noUpPrem1',{farm:fmt(farm)}),
+        t('noUpPrem2'),
+        t('noUpPrem3')
       ]);
-      setVerdict(
-        'Todas as minas no máximo — recapture-as pra faturar cristal e acelerar o rank-up.',
-        'Rank-up: '+fmtData(tRank)+(antesReset?'':' (só depois do próximo reset)')
-      );
+      setVerdict(t('noUpVerdict'), t('rankPrefix')+fmtData(tRank)+(antesReset?'':t('afterNextReset')));
       return;
     }
 
     // ===== MODO COM UPGRADE =====
     var fVelha=parseUnit(g('fVelha').value,1), fNova=parseUnit(g('fNova').value,1);
     var limite=parseInt(g('limite').value)||0, slots=parseInt(g('slots').value)||0;
-    if([fVelha,fNova].some(isNaN)){ setVerdict('Preencha o farm/h das minas.',''); return; }
+    if([fVelha,fNova].some(isNaN)){ setVerdict(t('errFillMines'),''); return; }
 
-    var delta=fNova-fVelha; // ganho/h ao subir 1 mina velha->nova
-
-    // OPÇÃO 2 depende do rank-up: calcula quando ele chega (com farm turbinado pelos upgrades livres)
+    var delta=fNova-fVelha;
     var preUp=Math.max(0, limite - slots);
     var farm2pre=farm + delta*preUp;
     var horasRank=(meta-atual)/farm2pre;
@@ -264,72 +409,67 @@ window.onerror=function(msg){
     var tRank2=new Date(tAgora.getTime()+horasRank*3600000);
     var rankAntesDoReset = horasRank<=Htot;
 
-    // recomendação (sempre útil)
-    g('rec').innerHTML='<strong>Recomendação:</strong> pra Opção 2, suba <strong>'+preUp+'</strong> mina(s) pré rank-up ('+limite+' limite − '+slots+' slots novos) e pegue as <strong>'+slots+'</strong> novas quando o rank-up abrir.';
+    g('rec').innerHTML=t('rec',{preUp:preUp, limite:limite, slots:slots});
 
-    // Se o rank-up NÃO acontece antes do reset → Opção 2 é impossível neste ciclo
     if(!rankAntesDoReset){
       g('secOpcoes').classList.add('hidden');
       setPremissas([
-        'O rank-up mostrado <strong>assume que você já subiu '+preUp+' mina(s) agora</strong> — o farm usado no cálculo é '+fmt(farm2pre)+'/h, não '+fmt(farm)+'/h. Se não fizer os upgrades, o rank-up atrasa.',
-        'Como o rank-up cai <strong>depois do reset ('+Htot.toFixed(1)+'h de agora)</strong>, os slots novos não abrem neste ciclo — por isso a comparação de opções foi ocultada.',
-        'A recomendação é upar o limite diário completo ('+limite+' minas) e seguir farmando: é o máximo de ganho possível hoje.'
+        t('noRankPrem1',{preUp:preUp, farm2pre:fmt(farm2pre), farm:fmt(farm)}),
+        t('noRankPrem2',{htot:Htot.toFixed(1)}),
+        t('noRankPrem3',{limite:limite})
       ]);
       setVerdict(
-        'Não dá pra passar de patente antes do reset → faça a Opção 1: suba as minas agora e farme.',
-        'Rank-up: '+fmtData(tRank2)+(preUp>0?' (já contando as '+preUp+' minas subidas)':'')+' — só depois do reset, slots não abrem hoje'
+        t('noRankVerdict'),
+        t('rankPrefix')+fmtData(tRank2)+(preUp>0?t('countingMines',{preUp:preUp}):'')+t('afterResetSuffix')
       );
       return;
     }
 
-    // rank-up acontece a tempo → COMPARA as duas opções
     g('secOpcoes').classList.remove('hidden');
 
     var farm1=farm + delta*limite;
     var opt1=farm1*Htot;
-
     var farm2pos=farm2pre + fNova*slots;
     var HrankReset=Math.max(0, Htot - horasRank);
     var HpreRank=Htot - HrankReset;
     var opt2=farm2pre*HpreRank + farm2pos*HrankReset;
 
-    g('row1').textContent='farm pós: '+fmt(farm1)+'/h · '+Htot.toFixed(1)+'h';
+    g('row1').textContent=t('row1',{farm1:fmt(farm1), htot:Htot.toFixed(1)});
     g('tot1').textContent=fmt(opt1);
-    g('row2').textContent='pré: '+fmt(farm2pre)+'/h → pós: '+fmt(farm2pos)+'/h';
+    g('row2').textContent=t('row2',{pre:fmt(farm2pre), pos:fmt(farm2pos)});
     g('tot2').textContent=fmt(opt2);
 
     var diff=opt2-opt1, pct=Math.abs(diff)/Math.max(opt1,opt2)*100;
     setPremissas([
-      '<strong>Opção 1:</strong> assume que você sobe as '+limite+' minas <strong>agora</strong> — farm vai a '+fmt(farm1)+'/h pelo ciclo inteiro ('+Htot.toFixed(1)+'h), sem usar os slots do rank-up.',
-      '<strong>Opção 2:</strong> assume '+preUp+' mina(s) subida(s) <strong>agora</strong> (farm '+fmt(farm2pre)+'/h) e, no rank-up, +'+slots+' minas novas (farm sobe pra '+fmt(farm2pos)+'/h até o reset).',
-      'O horário do rank-up já <strong>desconta a aceleração</strong> das minas subidas agora. Se você não fizer os upgrades, tudo atrasa.',
-      'Os totais comparam o <strong>farm acumulado até o reset (12:00)</strong> — cristais de fera ou recaptura não entram; atualize o Recurso atual quando recebê-los.'
+      t('cmpPrem1',{limite:limite, farm1:fmt(farm1), htot:Htot.toFixed(1)}),
+      t('cmpPrem2',{preUp:preUp, farm2pre:fmt(farm2pre), slots:slots, farm2pos:fmt(farm2pos)}),
+      t('cmpPrem3'),
+      t('cmpPrem4')
     ]);
     var box1=g('box1'), box2=g('box2');
     box1.classList.remove('win'); box2.classList.remove('win');
     g('tag1').textContent=''; g('tag2').textContent='';
-    var rankStr='Rank-up: '+fmtData(tRank2)+(preUp>0?' (já contando as '+preUp+' minas subidas)':'');
-    if(Math.abs(diff)<1){ setVerdict('Empate técnico — tanto faz.', rankStr); }
-    else if(diff>0){ box2.classList.add('win'); g('tag2').textContent='melhor';
-      setVerdict('Opção 2 vence por '+fmt(diff)+' ('+pct.toFixed(1)+'%)'+(pct<1?' — quase empate.':'.'), rankStr); }
-    else { box1.classList.add('win'); g('tag1').textContent='melhor';
-      setVerdict('Opção 1 vence por '+fmt(-diff)+' ('+pct.toFixed(1)+'%)'+(pct<1?' — quase empate.':'.'), rankStr); }
+    var rankStr=t('rankPrefix')+fmtData(tRank2)+(preUp>0?t('countingMines',{preUp:preUp}):'');
+    if(Math.abs(diff)<1){ setVerdict(t('tie'), rankStr); }
+    else if(diff>0){ box2.classList.add('win'); g('tag2').textContent=t('tagBest');
+      setVerdict(t('winOpt2',{diff:fmt(diff), pct:pct.toFixed(1)})+(pct<1?t('almostTie'):'.'), rankStr); }
+    else { box1.classList.add('win'); g('tag1').textContent=t('tagBest');
+      setVerdict(t('winOpt1',{diff:fmt(-diff), pct:pct.toFixed(1)})+(pct<1?t('almostTie'):'.'), rankStr); }
   }
 
+  // ===================== WIRE-UP =====================
   g('agora').value=nowISO();
   g('btnAgora').addEventListener('click',function(){
-    // auto-projeção: recurso e hora são uma "foto" do mesmo instante.
-    // Ao atualizar a hora, projeta o recurso pelo farm/h no tempo decorrido.
     var tAntes=new Date(g('agora').value);
     var tNovo=new Date();
     var farm=parseUnit(g('farm').value,1e3);
     var atual=parseUnit(g('atual').value,1e6);
     var horas=(tNovo-tAntes)/3600000;
-    if(!isNaN(farm)&&!isNaN(atual)&&horas>0&&horas<48){ // projeta só janelas razoáveis
+    if(!isNaN(farm)&&!isNaN(atual)&&horas>0&&horas<48){
       var ganho=farm*horas;
       var novo=(atual+ganho)/1e6;
       g('atual').value=novo.toFixed(2);
-      g('projInfo').textContent='recurso projetado: +'+fmt(ganho)+' ('+(horas*60).toFixed(0)+'min de farm)';
+      g('projInfo').textContent=t('proj',{gain:fmt(ganho), min:(horas*60).toFixed(0)});
       g('projInfo').classList.remove('hidden');
       clearTimeout(g('projInfo')._t);
       g('projInfo')._t=setTimeout(function(){ g('projInfo').classList.add('hidden'); },6000);
@@ -340,8 +480,16 @@ window.onerror=function(msg){
   g('temUpgrade').addEventListener('change',calc);
   ['atual','meta','farm','fVelha','fNova','limite','slots','agora'].forEach(function(id){
     g(id).addEventListener('input',calc);
-    g(id).addEventListener('change',calc); // mobile: datetime-local dispara 'change', não 'input'
+    g(id).addEventListener('change',calc);
   });
+  g('langPt').addEventListener('click',function(){setLang('pt');});
+  g('langEn').addEventListener('click',function(){setLang('en');});
+  g('langEs').addEventListener('click',function(){setLang('es');});
+
+  // idioma inicial: ?lang= na URL, senão pt
+  var m=location.search.match(/[?&]lang=(pt|en|es)/);
+  LANG=m?m[1]:'pt';
+  applyStatic();
   calc();
 })();
 </script>
